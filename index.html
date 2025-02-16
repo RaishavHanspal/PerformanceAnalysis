@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pixi.js Memory Leak Test</title>
+    <style>
+        canvas { border: 1px solid black; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+    <div>
+        <button id="leak1">Leak 1: Unremoved Event Listeners</button>
+        <button id="leak2">Leak 2: Unremoved Display Objects</button>
+        <button id="leak3">Leak 3: Unreleased Textures</button>
+        <button id="leak4">Leak 4: Circular References</button>
+        <button id="leak5">Leak 5: Timers/Intervals</button>
+    </div>
+    <script src="https://pixijs.download/v6.5.8/pixi.min.js"></script>
+    <script>
+        const app = new PIXI.Application({ width: 800, height: 600, backgroundColor: 0x1099bb });
+        document.body.appendChild(app.view);
+
+        // Leak 1: Unremoved Event Listeners
+        document.getElementById('leak1').addEventListener('click', () => {
+            const sprite = PIXI.Sprite.from('https://pixijs.com/assets/bunny.png');
+            sprite.interactive = true;
+            sprite.on('click', () => console.log('Clicked!')); 
+            app.stage.addChild(sprite);
+        });
+
+        // Leak 2: Unremoved Display Objects
+        document.getElementById('leak2').addEventListener('click', () => {
+            const sprite = PIXI.Sprite.from('https://pixijs.com/assets/bunny.png');
+            app.stage.addChild(sprite); 
+        });
+
+        // Leak 3: Unreleased Textures
+        document.getElementById('leak3').addEventListener('click', () => {
+            const texture = PIXI.Texture.from('https://pixijs.com/assets/bunny.png');
+            const sprite = new PIXI.Sprite(texture);
+            app.stage.addChild(sprite);
+        });
+
+        // Leak 4: Circular References
+        document.getElementById('leak4').addEventListener('click', () => {
+            const obj1 = {};
+            const obj2 = { ref: obj1 };
+            obj1.ref = obj2; 
+            app.stage.addChild(new PIXI.Sprite(PIXI.Texture.WHITE)); 
+        });
+
+        // Leak 5: Timers/Intervals
+        document.getElementById('leak5').addEventListener('click', () => {
+            setInterval(() => {
+                const sprite = PIXI.Sprite.from('https://pixijs.com/assets/bunny.png');
+                app.stage.addChild(sprite);
+            }, 1000); 
+        });
+    </script>
+</body>
+</html>
